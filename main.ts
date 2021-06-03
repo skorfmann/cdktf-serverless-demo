@@ -1,7 +1,7 @@
 import { Construct } from 'constructs';
 import { App, TerraformStack, TerraformOutput } from 'cdktf';
 import * as aws from '@cdktf/provider-aws';
-import { NodejsFunction } from './lib/esbuild-bundle';
+import { NodejsFunction } from './lib';
 import { Policy } from './lib/policy';
 import * as iam from 'iam-floyd';
 import * as path from 'path';
@@ -26,16 +26,17 @@ class ServerlessExample extends TerraformStack {
     })
 
     const bundle = new NodejsFunction(this, 'my-handler', {
-      entry: path.join(__dirname, 'main.my-handler.ts')
+      path: path.join(__dirname, 'function', 'index.ts')
     });
 
     const fn = new aws.LambdaFunction(this, 'fn', {
       functionName: fnName,
       role: role.arn,
-      handler: bundle.handler,
-      filename: bundle.assetPath,
-      sourceCodeHash: bundle.assetHash,
-      runtime: bundle.runtime.name
+      handler: 'index.handler',
+      filename: bundle.asset.path,
+      sourceCodeHash: bundle.asset.assetHash,
+
+      runtime: 'nodejs14.x'
     })
 
     const api = new aws.Apigatewayv2Api(this, 'api', {
