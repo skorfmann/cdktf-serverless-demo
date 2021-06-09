@@ -1,7 +1,8 @@
-import { Construct } from 'constructs';
+import { Construct, Node } from 'constructs';
 import { App, TerraformStack, TerraformOutput } from 'cdktf';
 import * as aws from '@cdktf/provider-aws';
 import { NodejsFunction } from './lib';
+import { StubLambda } from './lib/lambda-stub';
 import { Policy } from './lib/policy';
 import * as iam from 'iam-floyd';
 import * as path from 'path';
@@ -59,5 +60,10 @@ class ServerlessExample extends TerraformStack {
 }
 
 const app = new App();
-new ServerlessExample(app, 'serverless');
+const stack = new ServerlessExample(app, 'serverless');
+
+Node.of(stack).applyAspect(new StubLambda(() => {
+  return 'Replaced via Aspect'
+}))
+
 app.synth();
